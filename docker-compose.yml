@@ -1,0 +1,117 @@
+# ==============================================================================
+# DOCKER COMPOSE CONFIGURATION - QUIZ SYSTEM (ĐỀ 35)
+# Dự án: dtc245200049-mon-trien-khai
+# Môn học: Triển khai và Quản trị Hệ thống Phần mềm
+# Tuân thủ nghiêm ngặt quy tắc Hardening, Single-compose và Non-root
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. DỊCH VỤ NGINX REVERSE PROXY (CỔNG ĐÓN DUY NHẤT INGRESS PORT 80)
+  # ----------------------------------------------------------------------------
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: quiz_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - frontend_net
+    depends_on:
+      - quiz_app
+      - phpmyadmin
+
+  # ----------------------------------------------------------------------------
+  # 2. DỊCH VỤ ỨNG DỤNG QUIZ (NODE.JS EXPRESS - NON-ROOT USER 1000:1000)
+  # ----------------------------------------------------------------------------
+  quiz_app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: quiz_app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3000
+      DB_HOST: quiz_db
+      DB_PORT: 3306
+      DB_USER: ${MYSQL_USER:-quiz_user}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-Quiz#Sec2026!Deploy}
+      DB_NAME: ${MYSQL_DATABASE:-quiz_system}
+    networks:
+      - frontend_net
+      - backend_net
+    expose:
+      - "3000"
+    depends_on:
+      quiz_db:
+        condition: service_healthy
+
+  # ----------------------------------------------------------------------------
+  # 3. DỊCH VỤ CƠ SỞ DỮ LIỆU MYSQL 8.0 (CÔ LẬP HOÀN TOÀN TRONG BACKEND_NET)
+  # ----------------------------------------------------------------------------
+  quiz_db:
+    image: mysql:8.0
+    container_name: quiz_db
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-Root#SecurePass2026!Dtc}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-quiz_system}
+      MYSQL_USER: ${MYSQL_USER:-quiz_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-Quiz#Sec2026!Deploy}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - backend_net
+    # HARDENING: TUYỆT ĐỐI KHÔNG mở cổng ra host (không dùng ports: 3306:3306)
+    expose:
+      - "3306"
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  # ----------------------------------------------------------------------------
+  # 4. DỊCH VỤ QUẢN TRỊ CSDL PHPMYADMIN (CHỈ TRUY CẬP QUA NGINX /phpmyadmin/)
+  # ----------------------------------------------------------------------------
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: quiz_phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: quiz_db
+      PMA_PORT: 3306
+      PMA_ABSOLUTE_URI: /phpmyadmin/
+      UPLOAD_LIMIT: 64M
+    networks:
+      - frontend_net
+      - backend_net
+    # HARDENING: Không mở cổng trực tiếp ra host, lưu lượng bắt buộc qua Nginx
+    expose:
+      - "80"
+    depends_on:
+      quiz_db:
+        condition: service_healthy
+
+# ------------------------------------------------------------------------------
+# PHÂN VÙNG MẠNG CÔ LẬP (NETWORK HARDENING)
+# ------------------------------------------------------------------------------
+networks:
+  # Mạng giao tiếp giữa Nginx và các tầng ứng dụng (Quiz App, phpMyAdmin)
+  frontend_net:
+    driver: bridge
+  # Mạng giao tiếp nội bộ tuyệt mật giữa Ứng dụng và Cơ sở dữ liệu MySQL
+  backend_net:
+    driver: bridge
+
+# ------------------------------------------------------------------------------
+# LƯU TRỮ DỮ LIỆU BỀN VỮNG (PERSISTENT VOLUMES)
+# ------------------------------------------------------------------------------
+volumes:
+  db_data:
+    driver: local

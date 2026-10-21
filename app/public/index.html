@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hệ Thống Thi Trắc Nghiệm - Triển khai & Quản trị Hệ thống</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="background-decorations">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="logo-area">
+          <div class="logo-icon">🛡️</div>
+          <div>
+            <h1>QUIZ SYSTEM (ĐỀ 35)</h1>
+            <p class="subtitle">Triển khai và Quản trị Hệ thống Phần mềm • Mã SV: DTC245200049</p>
+          </div>
+        </div>
+        <div class="header-badges">
+          <span class="badge badge-sec" id="system-badge">● System: Hardened Non-Root</span>
+          <span class="badge badge-db" id="db-badge">● DB: Checking...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Step 1: Candidate Info Screen -->
+      <section id="step-intro" class="card fade-in">
+        <div class="card-header">
+          <h2>Thông Tin Thí Sinh & Bắt Đầu Bài Thi</h2>
+          <p>Bài thi kiểm tra kiến thức về Docker Compose, Network Isolation, Nginx Hardening và Quản trị Linux Container.</p>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="student-id">Mã số sinh viên <span class="required">*</span></label>
+              <input type="text" id="student-id" placeholder="VD: DTC245200049" value="DTC245200049" required>
+            </div>
+            <div class="form-group">
+              <label for="student-name">Họ và tên sinh viên <span class="required">*</span></label>
+              <input type="text" id="student-name" placeholder="VD: Nguyễn Viết Dũng" value="Nguyễn Viết Dũng" required>
+            </div>
+          </div>
+
+          <div class="rules-box">
+            <h3>Quy định an toàn & tiêu chuẩn hệ thống:</h3>
+            <ul>
+              <li>Hệ thống chạy trên nền tảng Nginx Reverse Proxy bảo vệ bởi 5 Security Headers.</li>
+              <li>Container ứng dụng chạy dưới quyền người dùng không đặc quyền (Non-Root UID: 1000).</li>
+              <li>Cơ sở dữ liệu MySQL được cách ly tuyệt đối trong mạng nội bộ <code>backend_net</code>.</li>
+            </ul>
+          </div>
+
+          <div class="action-bar">
+            <button id="btn-start" class="btn btn-primary btn-glow">Bắt Đầu Làm Bài Thi</button>
+            <button id="btn-view-history" class="btn btn-secondary">Xem Lịch Sử Nộp Bài</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 2: Quiz Screen -->
+      <section id="step-quiz" class="card fade-in hidden">
+        <div class="quiz-status-bar">
+          <div class="student-pill">
+            <span id="pill-id">DTC245200049</span> - <span id="pill-name">Thí sinh</span>
+          </div>
+          <div class="progress-wrap">
+            <span id="progress-text">Câu 1/5</span>
+            <div class="progress-track">
+              <div id="progress-bar" class="progress-fill" style="width: 20%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="questions-container" class="questions-list">
+          <!-- Rendered by app.js -->
+        </div>
+
+        <div class="quiz-footer">
+          <button id="btn-submit" class="btn btn-success btn-large">
+            <span>Nộp Bài Thi</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Step 3: Result Screen -->
+      <section id="step-result" class="card fade-in hidden">
+        <div class="result-header">
+          <div class="score-circle" id="score-circle">
+            <div class="score-number" id="res-score">5/5</div>
+            <div class="score-percent" id="res-percent">100%</div>
+          </div>
+          <h2 id="res-title">Xuất Sắc! Bạn Đã Hoàn Thành Bài Thi</h2>
+          <p id="res-subtitle">Toàn bộ câu trả lời đã được ghi nhận vào CSDL MySQL nội bộ qua backend_net.</p>
+        </div>
+
+        <div class="card-body">
+          <h3>Chi tiết kết quả & Giải trình kỹ thuật:</h3>
+          <div id="result-details" class="result-details-list">
+            <!-- Rendered by app.js -->
+          </div>
+
+          <div class="action-bar result-actions">
+            <button id="btn-retry" class="btn btn-primary">Làm Lại Bài Thi</button>
+            <button id="btn-show-history-from-res" class="btn btn-secondary">Xem Bảng Lịch Sử</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 4: History / Leaderboard Screen -->
+      <section id="step-history" class="card fade-in hidden">
+        <div class="card-header">
+          <h2>Nhật Ký & Lịch Sử Nộp Bài Thi</h2>
+          <p>Dữ liệu được lưu trữ an toàn trong bảng <code>quiz_results</code> của cơ sở dữ liệu MySQL.</p>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Mã SV</th>
+                  <th>Họ Tên</th>
+                  <th>Điểm Số</th>
+                  <th>Tỷ Lệ</th>
+                  <th>Thời Gian Nộp</th>
+                </tr>
+              </thead>
+              <tbody id="history-table-body">
+                <tr><td colspan="6" class="text-center">Đang tải dữ liệu...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="action-bar">
+            <button id="btn-back-home" class="btn btn-primary">Quay Lại Trang Chủ</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>© 2026 Học phần Triển khai & Quản trị Hệ thống Phần mềm • Kiến trúc Nginx + Node.js (Non-Root) + MySQL (Isolated)</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

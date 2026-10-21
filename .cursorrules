@@ -1,0 +1,98 @@
+# ALWAYS ON CONFIGURATION & CONTEXT:
+# [STATUS: ALWAYS ON] Mọi câu chat, hành động viết code, kiểm thử hệ thống hoặc tạo tài liệu của Agent bắt buộc phải tuân thủ nghiêm ngặt theo bộ quy tắc trong tệp này và bộ kỹ năng định nghĩa tại tệp `./skills.md` ở thư mục gốc.
+# Trước khi phản hồi người dùng, Agent bắt buộc phải tự động quét và tải nội dung của tệp `./skills.md` làm tiền đề xử lý dữ liệu. Tuyệt đối không được bỏ qua hoặc làm trái các hướng dẫn trong bộ kỹ năng này.
+
+# ==============================================================================
+# QUY TẮC CẤU HÌNH HỆ THỐNG VÀ TIÊU CHUẨN PHÁT TRIỂN (.cursorrules)
+# Dự án: dtc245200049-mon-trien-khai
+# Môn học: Triển khai và Quản trị Hệ thống Phần mềm
+# ==============================================================================
+
+Mục tiêu cốt lõi: Thiết lập bộ khung quy tắc tối cao cho Agent nhằm đảm bảo toàn bộ mã nguồn, cấu hình hạ tầng container, reverse proxy và tài liệu kỹ thuật (SRS, báo cáo) đạt chuẩn chất lượng cao nhất, tối ưu an ninh (hardening), loại bỏ hoàn toàn suy diễn và ảo giác kỹ thuật (zero-hallucination).
+
+Agent khi làm việc trong dự án này BẮT BUỘC phải tuân thủ nghiêm ngặt các quy chuẩn sau:
+
+---
+
+## 1. QUY CHUẨN CẤU HÌNH DOCKER COMPOSE
+
+1.1. Hợp nhất cấu hình hạ tầng (Single Compose File):
+- Toàn bộ dịch vụ hạ tầng và ứng dụng (Nginx Reverse Proxy, Quiz App, MySQL Database, phpMyAdmin, v.v.) bắt buộc phải được quy hoạch và gộp chung trong một file `docker-compose.yml` duy nhất tại thư mục gốc của dự án.
+- Không phân tách thành nhiều file lẻ trừ khi có yêu cầu ghi đè môi trường (override) cụ thể.
+
+1.2. Phân vùng mạng và cô lập bảo mật (Network Hardening):
+- Bắt buộc phải thiết lập tối thiểu hai mạng cầu nối (bridge networks) độc lập nhằm cô lập các tầng dịch vụ:
+  + `frontend_net`: Dành riêng cho giao tiếp giữa Nginx Reverse Proxy và các dịch vụ tầng ứng dụng (Quiz App, phpMyAdmin).
+  + `backend_net`: Dành riêng cho giao tiếp nội bộ giữa ứng dụng (Quiz App, phpMyAdmin) và cơ sở dữ liệu (MySQL).
+- Bảo vệ cơ sở dữ liệu MySQL:
+  + TUYỆT ĐỐI KHÔNG mở cổng trực tiếp ra ngoài Internet hoặc ra máy chủ vật lý (Host). CẤM sử dụng cú pháp mapping cổng dạng `ports: - "3306:3306"`.
+  + MySQL chỉ được phép kết nối nội bộ qua mạng `backend_net` và chỉ mở giao tiếp nội bộ cho các container trong cùng mạng (`expose: - 3306`).
+  + Mọi truy cập vào dữ liệu từ bên ngoài máy chủ bắt buộc phải thông qua ứng dụng hoặc công cụ quản trị phpMyAdmin đã qua xác thực và định tuyến bởi Nginx.
+
+1.3. Tiêu chuẩn mật khẩu cơ sở dữ liệu (Strong Passwords):
+- Các mật khẩu cấu hình cho cơ sở dữ liệu (bao gồm `MYSQL_ROOT_PASSWORD`, `MYSQL_PASSWORD`, v.v.) bắt buộc phải là mật khẩu mạnh:
+  + Độ dài tối thiểu: 12 ký tự.
+  + Thành phần bắt buộc: Chữ hoa (A-Z), chữ thường (a-z), chữ số (0-9) và ký tự đặc biệt (!@#$%^&*()_+-=[]{}|;:,.<>?).
+- Quản lý cấu hình mật khẩu thông qua file biến môi trường `.env` và cung cấp `.env.example` chuẩn mẫu. Tuyệt đối không sử dụng mật khẩu mặc định hoặc mật khẩu yếu (như `root`, `123456`, `admin`, `password`).
+
+---
+
+## 2. QUY CHUẨN DOCKERFILE & BẢO MẬT CONTAINER (HARDENING)
+
+2.1. Vận hành dưới quyền người dùng không đặc quyền (Non-root Container):
+- Mọi Dockerfile tự xây dựng (custom Dockerfile) cho ứng dụng (điển hình là ứng dụng Quiz) bắt buộc phải cấu hình chạy dưới quyền người dùng thường.
+- Bắt buộc khai báo lệnh: `USER 1000:1000` (hoặc tạo user/group không đặc quyền cụ thể như `appuser:appgroup`).
+- Phân quyền sở hữu thư mục làm việc trước khi chuyển user: `CHOWN -R 1000:1000 /app` (hoặc thư mục mã nguồn tương ứng).
+- TUYỆT ĐỐI CẤM sử dụng quyền `root` mặc định để thực thi ứng dụng nhằm triệt tiêu nguy cơ leo thang đặc quyền (privilege escalation) khi container bị xâm nhập.
+
+2.2. Chuẩn hóa Base Image & Multi-stage:
+- Sử dụng Base Image tối giản, rõ nguồn gốc (ví dụ: `alpine`, `slim`).
+- Khuyến khích tối ưu hóa Multi-stage build để đảm bảo image thành phẩm có dung lượng nhỏ gọn và không chứa các công cụ biên dịch thừa thãi trong môi trường production.
+
+---
+
+## 3. QUY CHUẨN NGINX & REVERSE PROXY
+
+3.1. Cổng vào duy nhất (Single Ingress Point):
+- Toàn bộ lưu lượng truy cập từ bên ngoài mạng vào ứng dụng Quiz hoặc hệ quản trị phpMyAdmin BẮT BUỘC phải đi qua cổng `80` (HTTP) hoặc `443` (HTTPS) của Nginx Reverse Proxy.
+- Các container ứng dụng bên trong (Quiz App, phpMyAdmin) không được map port trực tiếp ra ngoài host.
+
+3.2. Cấu hình bắt buộc 5 Security Headers phòng vệ:
+File cấu hình Nginx (`nginx.conf` hoặc virtual host config) bắt buộc phải tích hợp đầy đủ 5 tiêu đề an ninh cơ bản nhằm ngăn chặn các tấn công web phổ biến:
+1. `X-Frame-Options "SAMEORIGIN"` (hoặc `"DENY"`): Ngăn chặn tấn công Clickjacking và nhúng iframe trái phép.
+2. `X-XSS-Protection "1; mode=block"`: Kích hoạt cơ chế phòng vệ Cross-Site Scripting (XSS) trên trình duyệt cũ.
+3. `X-Content-Type-Options "nosniff"`: Vô hiệu hóa tính năng tự động nhận diện MIME type (MIME-sniffing), giảm rủi ro tấn công từ file upload độc hại.
+4. `Referrer-Policy "strict-origin-when-cross-origin"`: Kiểm soát chặt chẽ thông tin nguồn gốc gửi kèm trong header HTTP referrer.
+5. `Content-Security-Policy` (CSP): Quy định chặt chẽ phạm vi nguồn tài nguyên được tải (scripts, styles, images), tối thiểu phải có chỉ thị bảo vệ cơ bản như `default-src 'self'`.
+
+---
+
+## 4. NGUYÊN TẮC VIẾT TÀI LIỆU (SRS & BÁO CÁO KỸ THUẬT)
+
+4.1. Ngôn ngữ & Định dạng chuẩn học thuật:
+- Toàn bộ tài liệu kỹ thuật, tài liệu yêu cầu phần mềm (SRS), hướng dẫn cài đặt và báo cáo học phần bắt buộc phải được viết hoàn toàn bằng TIẾNG VIỆT.
+- Trình bày đúng quy chuẩn Markdown (GFM), chia đề mục rõ ràng, mạch lạc, khoa học, chuyên nghiệp.
+
+4.2. Nguyên tắc Không Ảo giác - Bám sát Thực tế (Ground-truth Verification):
+- TUYỆT ĐỐI CẤM viết tóm tắt sơ sài, cấm các chỉ dẫn chung chung, vô định dạng như: "điền cấu hình vào đây", "tự thay thế các tham số thích hợp", "cài đặt như thông thường".
+- Mọi hướng dẫn trong `README.md`, tài liệu SRS và báo cáo phải đối chiếu 1:1 với thông số kỹ thuật thực tế đang hoạt động trong dự án:
+  + Cổng dịch vụ (Ports): Phải ghi đúng cổng thực tế (ví dụ: cổng 80 của Nginx, cổng 3000/8080 nội bộ của App).
+  + Biến môi trường (Environment Variables): Phải sử dụng đúng tên biến có thực trong `.env` và `docker-compose.yml`.
+  + Tên dịch vụ (Services), đường dẫn thư mục, tên volume và tên mạng phải chuẩn xác tuyệt đối.
+
+4.3. Diễn giải ý nghĩa kỹ thuật chuyên sâu (Technical Rationale):
+- Mỗi đoạn mã, khối lệnh cấu hình, chỉ thị hạ tầng được đưa vào tài liệu bắt buộc phải có phần giải thích cặn kẽ:
+  + Tại sao lại sử dụng lệnh này/chỉ thị này?
+  + Ý nghĩa kỹ thuật của từng tham số đối với sự ổn định, tính cô lập và năng lực bảo mật của toàn bộ hệ thống là gì?
+
+---
+
+## 5. BẢNG KIỂM TRA TỰ ĐỘNG (AGENT PRE-FLIGHT CHECKLIST)
+
+Mỗi khi Agent xuất mã nguồn, file cấu hình hoặc viết tài liệu, Agent phải tự rà soát:
+- [ ] Tất cả service có nằm trong một file `docker-compose.yml` duy nhất không?
+- [ ] Có tối thiểu 2 mạng `frontend_net` và `backend_net` chưa? MySQL có bị lộ port ra ngoài host không?
+- [ ] Mật khẩu database có thỏa mãn >= 12 ký tự, đủ chữ hoa, thường, số, ký tự đặc biệt không?
+- [ ] Dockerfile ứng dụng có chạy dưới `USER 1000:1000` (non-root) không?
+- [ ] Nginx có đảm bảo là cổng đón duy nhất (80/443) và đủ 5 Security Headers không?
+- [ ] Tài liệu có viết bằng tiếng Việt chuẩn, bám sát cấu hình thực tế và giải thích chi tiết ý nghĩa kỹ thuật chưa?
