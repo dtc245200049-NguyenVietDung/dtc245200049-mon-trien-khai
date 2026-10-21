@@ -163,6 +163,39 @@ services:
     depends_on:
       - prometheus
 
+  # ----------------------------------------------------------------------------
+  # 8. DỊCH VỤ LOKI (LƯU TRỮ VÀ TRUY VẤN LOG TẬP TRUNG)
+  # ----------------------------------------------------------------------------
+  loki:
+    image: grafana/loki:latest
+    container_name: quiz_loki
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - monitoring_net
+
+  # ----------------------------------------------------------------------------
+  # 9. DỊCH VỤ PROMTAIL (THU THẬP LOG CONTAINER CHUYỂN TIẾP VỀ LOKI)
+  # ----------------------------------------------------------------------------
+  promtail:
+    image: grafana/promtail:latest
+    container_name: quiz_promtail
+    restart: unless-stopped
+    volumes:
+      - ./promtail/promtail-config.yml:/etc/promtail/config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - monitoring_net
+    depends_on:
+      - loki
+
 # ------------------------------------------------------------------------------
 # PHÂN VÙNG MẠNG CÔ LẬP (NETWORK HARDENING)
 # ------------------------------------------------------------------------------
@@ -173,7 +206,7 @@ networks:
   # Mạng giao tiếp nội bộ tuyệt mật giữa Ứng dụng và Cơ sở dữ liệu MySQL
   backend_net:
     driver: bridge
-  # Mạng riêng biệt cho hệ thống giám sát (Prometheus, cAdvisor, Grafana)
+  # Mạng riêng biệt cho hệ thống giám sát và ghi log tập trung
   monitoring_net:
     driver: bridge
 
@@ -186,4 +219,6 @@ volumes:
   prometheus_data:
     driver: local
   grafana_data:
+    driver: local
+  loki_data:
     driver: local

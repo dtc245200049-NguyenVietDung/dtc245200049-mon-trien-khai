@@ -162,10 +162,11 @@ async function setupSchemaAndSeed() {
 
 // REST API Endpoints
 
-// Middleware to count total HTTP requests
+// Middleware to count total HTTP requests and log access for Loki
 let totalRequests = 0;
 app.use((req, res, next) => {
   totalRequests++;
+  console.log(`[HTTP ${req.method}] ${req.url} - IP: ${req.ip || 'remote'} - Request #${totalRequests} - Time: ${new Date().toISOString()}`);
   next();
 });
 
