@@ -831,7 +831,7 @@ Một lỗi bảo mật kinh điển trong các dự án triển khai hệ thố
 | Tên Dịch Vụ | Tên Container | Mạng `frontend_net` | Mạng `backend_net` | Mạng `monitoring_net` | Khả năng truy cập CSDL MySQL |
 | :--- | :--- | :---: | :---: | :---: | :--- |
 | **Nginx Ingress** | `quiz_nginx` | **CÓ** | **KHÔNG** | **KHÔNG** | Bị chặn hoàn toàn ở tầng mạng |
-| **Quiz Web App** | `quiz_app` | **CÓ** | **CÓ** | **CÓ** (Scrape) | Cho phép kết nối đọc/ghi dữ liệu |
+| **Quiz Web App** | `quiz_app` | **CÓ** | **CÓ** | **KHÔNG** | Cho phép kết nối đọc/ghi dữ liệu |
 | **phpMyAdmin** | `quiz_phpmyadmin` | **CÓ** | **CÓ** | **KHÔNG** | Cho phép kết nối quản trị CSDL |
 | **MySQL 8.0** | `quiz_db` | **KHÔNG** | **CÓ** | **KHÔNG** | Chỉ chấp nhận kết nối từ `backend_net` |
 | **cAdvisor** | `quiz_cadvisor` | **KHÔNG** | **KHÔNG** | **CÓ** | Bị chặn hoàn toàn, không thấy CSDL |
