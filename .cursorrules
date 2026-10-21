@@ -1,6 +1,8 @@
 # ALWAYS ON CONFIGURATION & CONTEXT:
-# [STATUS: ALWAYS ON] Mọi câu chat, hành động viết code, kiểm thử hệ thống hoặc tạo tài liệu của Agent bắt buộc phải tuân thủ nghiêm ngặt theo bộ quy tắc trong tệp này và bộ kỹ năng định nghĩa tại tệp `./skills.md` ở thư mục gốc.
-# Trước khi phản hồi người dùng, Agent bắt buộc phải tự động quét và tải nội dung của tệp `./skills.md` làm tiền đề xử lý dữ liệu. Tuyệt đối không được bỏ qua hoặc làm trái các hướng dẫn trong bộ kỹ năng này.
+# [STATUS: ALWAYS ON] Mọi phiên làm việc, cửa sổ chat mới, hành động viết code, kiểm thử hệ thống hoặc tạo tài liệu của Agent BẮT BUỘC phải:
+# 1. Tuân thủ nghiêm ngặt bộ quy tắc trong tệp này (.cursorrules) và bộ kỹ năng tại `./skills.md`.
+# 2. Tự động đọc và bám sát 100% các tiêu chí đánh giá (Thang điểm 10), lộ trình 3 mốc commit tại `./docs/DE_TAI_THUC_HANH_DE35.md`.
+# 3. TRONG MỌI PHẢN HỒI: Agent bắt buộc phải chủ động rà soát tiến độ theo 7 tiêu chí chấm điểm và nhắc nhở người dùng các hành động kỹ thuật cụ thể cần thực hiện ngay (lệnh terminal, thao tác demo, ảnh cần chụp).
 
 # ==============================================================================
 # QUY TẮC CẤU HÌNH HỆ THỐNG VÀ TIÊU CHUẨN PHÁT TRIỂN (.cursorrules)

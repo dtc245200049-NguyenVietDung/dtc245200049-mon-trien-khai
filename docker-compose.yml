@@ -2,6 +2,7 @@
 # DOCKER COMPOSE CONFIGURATION - QUIZ SYSTEM (ĐỀ 35)
 # Dự án: dtc245200049-mon-trien-khai
 # Môn học: Triển khai và Quản trị Hệ thống Phần mềm
+# Sinh viên: DTC245200049 - Nguyễn Viết Dũng
 # Tuân thủ nghiêm ngặt quy tắc Hardening, Single-compose và Non-root
 # ==============================================================================
 
@@ -98,6 +99,70 @@ services:
       quiz_db:
         condition: service_healthy
 
+  # ----------------------------------------------------------------------------
+  # 5. DỊCH VỤ CADVISOR (THU THẬP TÀI NGUYÊN CONTAINER CPU/RAM/NETWORK)
+  # ----------------------------------------------------------------------------
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: quiz_cadvisor
+    restart: unless-stopped
+    ports:
+      - "8082:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - monitoring_net
+
+  # ----------------------------------------------------------------------------
+  # 6. DỊCH VỤ PROMETHEUS (THU THẬP VÀ LƯU TRỮ METRICS HỆ THỐNG)
+  # ----------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: quiz_prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - frontend_net
+      - monitoring_net
+    depends_on:
+      - cadvisor
+      - quiz_app
+
+  # ----------------------------------------------------------------------------
+  # 7. DỊCH VỤ GRAFANA (TRỰC QUAN HÓA DASHBOARD GIÁM SÁT THỜI GIAN THỰC)
+  # ----------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:10.4.1
+    container_name: quiz_grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-Admin#Secure2026!Dtc}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - monitoring_net
+    depends_on:
+      - prometheus
+
 # ------------------------------------------------------------------------------
 # PHÂN VÙNG MẠNG CÔ LẬP (NETWORK HARDENING)
 # ------------------------------------------------------------------------------
@@ -108,10 +173,17 @@ networks:
   # Mạng giao tiếp nội bộ tuyệt mật giữa Ứng dụng và Cơ sở dữ liệu MySQL
   backend_net:
     driver: bridge
+  # Mạng riêng biệt cho hệ thống giám sát (Prometheus, cAdvisor, Grafana)
+  monitoring_net:
+    driver: bridge
 
 # ------------------------------------------------------------------------------
 # LƯU TRỮ DỮ LIỆU BỀN VỮNG (PERSISTENT VOLUMES)
 # ------------------------------------------------------------------------------
 volumes:
   db_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
     driver: local

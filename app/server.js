@@ -162,6 +162,13 @@ async function setupSchemaAndSeed() {
 
 // REST API Endpoints
 
+// Middleware to count total HTTP requests
+let totalRequests = 0;
+app.use((req, res, next) => {
+  totalRequests++;
+  next();
+});
+
 // 1. Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({
@@ -171,6 +178,40 @@ app.get('/health', (req, res) => {
     service: 'quiz-app',
     user_uid: process.getuid ? process.getuid() : 'N/A (Windows/Emulated)'
   });
+});
+
+// 1.1. Prometheus Metrics endpoint
+app.get('/metrics', (req, res) => {
+  const mem = process.memoryUsage();
+  const uptime = process.uptime();
+
+  res.set('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
+  res.send([
+    '# HELP quiz_app_uptime_seconds Total uptime of Quiz App in seconds',
+    '# TYPE quiz_app_uptime_seconds gauge',
+    `quiz_app_uptime_seconds ${uptime.toFixed(2)}`,
+    '',
+    '# HELP quiz_app_requests_total Total number of HTTP requests processed',
+    '# TYPE quiz_app_requests_total counter',
+    `quiz_app_requests_total ${totalRequests}`,
+    '',
+    '# HELP quiz_app_memory_heap_used_bytes Heap memory used by Node.js in bytes',
+    '# TYPE quiz_app_memory_heap_used_bytes gauge',
+    `quiz_app_memory_heap_used_bytes ${mem.heapUsed}`,
+    '',
+    '# HELP quiz_app_memory_heap_total_bytes Total heap allocated by Node.js in bytes',
+    '# TYPE quiz_app_memory_heap_total_bytes gauge',
+    `quiz_app_memory_heap_total_bytes ${mem.heapTotal}`,
+    '',
+    '# HELP quiz_app_memory_rss_bytes Resident Set Size in bytes',
+    '# TYPE quiz_app_memory_rss_bytes gauge',
+    `quiz_app_memory_rss_bytes ${mem.rss}`,
+    '',
+    '# HELP quiz_app_db_connected Database connection status (1 = connected, 0 = disconnected)',
+    '# TYPE quiz_app_db_connected gauge',
+    `quiz_app_db_connected ${dbConnected ? 1 : 0}`,
+    ''
+  ].join('\n'));
 });
 
 // 2. Lay danh sach cau hoi (khong gui kem dap an dung)

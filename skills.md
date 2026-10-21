@@ -106,11 +106,31 @@ Mỗi mốc chỉ được phép tiến hành commit sau khi Agent đã kích ho
 
 ---
 
-## 4. MA TRẬN KẾT HỢP GIỮA CÁC SKILLS VÀ .CURSORRULES
+## 4. SKILL: PROACTIVE_RUBRIC_TRACKING_AND_USER_GUIDANCE
+> **Tên kỹ năng**: Bám sát tiêu chí chấm điểm & Chủ động điều hướng hành động người dùng  
+> **Mục tiêu**: Đảm bảo dù ở bất kỳ cửa sổ chat mới nào, Agent luôn tự động nạp đề cương đề tài, giám sát 7 tiêu chí đánh giá và nhắc nhở người dùng thao tác chính xác từng bước.
+
+### 4.1. Cơ chế tự động nạp ngữ cảnh (Session Context Reloading):
+- Ở mỗi phiên chat mới hoặc khi người dùng làm mới phiên làm việc, Agent bắt buộc phải tự động nạp:
+  + Tệp đề tài: `./docs/DE_TAI_THUC_HANH_DE35.md`
+  + Tệp quy tắc: `./.cursorrules` & `./AGENTS.md`
+  + Tệp kỹ năng: `./skills.md`
+
+### 4.2. Quy trình chủ động nhắc nhở người dùng (Proactive User Reminders):
+- Trong **MỖI PHẢN HỒI**, Agent không chỉ trả lời câu hỏi thụ động mà phải chủ động kèm theo:
+  1. **Bảng tiến độ hiện tại** theo thang điểm 10 của Giảng viên.
+  2. **Hành động kỹ thuật người dùng cần làm tiếp theo:**
+     * Lệnh Terminal cụ thể cần chạy (kèm giải thích rõ tại sao phải chạy lệnh này).
+     * Ảnh minh chứng cần chụp (trong 14 ảnh) để đưa vào Báo cáo 10 trang.
+     * Mốc Git commit tiếp theo cần thực hiện.
+
+---
+
+## 5. MA TRẬN KẾT HỢP GIỮA CÁC SKILLS VÀ .CURSORRULES
 
 ```
 +-----------------------------------------------------------------------------------+
-|                            .cursorrules (Luật Cốt Lõi)                            |
+|                            .cursorrules & AGENTS.md (Luật Cốt Lõi)               |
 | (Docker Compose Hardening | Non-root Dockerfile | 5 Nginx Headers | VN Docs Ground-truth) |
 +-----------------------------------------------------------------------------------+
                                          |
@@ -121,5 +141,11 @@ Mỗi mốc chỉ được phép tiến hành commit sau khi Agent đã kích ho
 | 1. CODE_AND_TEST_AUTONOMOUSLY  --> Tự chạy Terminal, tự debug & self-healing >= 3 lần |
 | 2. DETAILED_TECHNICAL_DOCS     --> Viết cuốn chiếu, mổ xẻ code thực tế, bảng & sơ đồ|
 | 3. GIT_COMMIT_COMPLIANCE       --> 3 Mốc commit chuẩn Conventional Commits         |
+| 4. PROACTIVE_RUBRIC_TRACKING   --> Luôn bám sát phiếu điểm & nhắc nhở người dùng  |
++-----------------------------------------------------------------------------------+
+                                         |
+                                         v
++-----------------------------------------------------------------------------------+
+|                docs/DE_TAI_THUC_HANH_DE35.md (Đích Đến: 10.0 / 10 Điểm)           |
 +-----------------------------------------------------------------------------------+
 ```

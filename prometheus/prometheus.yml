@@ -1,0 +1,26 @@
+# ==============================================================================
+# PROMETHEUS CONFIGURATION - QUIZ SYSTEM MONITORING (ĐỀ 35)
+# Dự án: dtc245200049-mon-trien-khai
+# Sinh viên: DTC245200049 - Nguyễn Viết Dũng
+# ==============================================================================
+
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  # 1. Giám sát bản thân Prometheus
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # 2. Giám sát tài nguyên container (CPU, RAM, Network) qua cAdvisor
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+
+  # 3. Giám sát ứng dụng Web Quiz (Node.js/Express)
+  - job_name: 'quiz_app'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['quiz_app:3000']
