@@ -177,6 +177,7 @@ Cụ thể, đề tài tập trung giải quyết 5 mục tiêu kỹ thuật tr�
 *   **FR-04 (Hiển thị giải trình kỹ thuật):** Cung cấp phản hồi tức thời cho thí sinh về các câu trả lời đúng/sai kèm giải thích chuyên sâu về kiến thức triển khai hệ thống liên quan.
 *   **FR-05 (Quản trị CSDL trực quan):** Cho phép người quản trị truy cập phpMyAdmin tại đường dẫn `/phpmyadmin/` để quản lý các bảng dữ liệu `questions` và `quiz_results`.
 *   **FR-06 (Health Check & Metrics API):** Cung cấp endpoint `/health` trả về trạng thái hoạt động của hệ thống, trạng thái kết nối CSDL và UID của tiến trình; cung cấp endpoint `/metrics` xuất dữ liệu chuỗi thời gian định dạng Prometheus text format.
+*   **FR-07 (Tạo đề thi & Quản lý câu hỏi trắc nghiệm):** Cung cấp giao diện trực quan cho phép tạo đề thi mới bằng cách nhập câu hỏi, 4 phương án lựa chọn, chọn đáp án đúng, nhập giải thích và phân loại; hệ thống tự động ghi nhận vào bảng `questions` trong MySQL và hỗ trợ xem danh sách cũng như xóa câu hỏi theo ID.
 
 ### 1.4.2. Yêu cầu phi chức năng (Non-Functional Requirements - NFR)
 *   **NFR-01 (Tính cô lập mạng - Network Isolation):** CSDL MySQL tuyệt đối không được phép mở cổng 3306 ra máy chủ vật lý. Mọi luồng giao tiếp với MySQL bắt buộc phải đi qua mạng nội bộ Docker `backend_net`.
@@ -214,7 +215,7 @@ Cụ thể, đề tài tập trung giải quyết 5 mục tiêu kỹ thuật tr�
 
 1. **Tầng đón tiếp và phòng vệ vành đai (Ingress & Perimeter Defense Layer):** Dịch vụ `quiz_nginx` tiếp nhận toàn bộ lưu lượng HTTP bên ngoài qua cổng 80, đảm nhận vai trò Reverse Proxy, cân bằng tải, định tuyến và thiết lập 5 tiêu đề an ninh HTTP.
 2. **Tầng xử lý logic nghiệp vụ và quản trị (Application & Management Layer):**
-   * `quiz_app`: Ứng dụng thi trắc nghiệm xây dựng bằng Node.js (Express), xử lý logic nạp câu hỏi, chấm điểm thi tự động, xuất số đo `/metrics` cho Prometheus và ghi nhật ký truy cập ra stdout cho Promtail.
+   * `quiz_app`: Ứng dụng thi trắc nghiệm xây dựng bằng Node.js (Express), xử lý toàn diện 3 chức năng: tạo đề thi & quản lý câu hỏi mới, làm bài thi trực tuyến, chấm điểm thi tự động và xuất số đo `/metrics` cho Prometheus và ghi nhật ký truy cập ra stdout cho Promtail.
    * `quiz_phpmyadmin`: Công cụ quản trị CSDL trực quan chạy trên nền PHP, được định tuyến bí mật qua đường dẫn `/phpmyadmin/` của Nginx.
 3. **Tầng lưu trữ dữ liệu bền vững (Data Persistence Layer):** CSDL `quiz_db` chạy phiên bản MySQL 8.0, lưu trữ toàn bộ ngân hàng câu hỏi và lịch sử bài thi, được cách ly tuyệt đối trong mạng nội bộ `backend_net` và gắn với Docker Volume `db_data`.
 4. **Tầng quan sát và quản trị vận hành (Observability & Telemetry Layer):**
@@ -999,7 +1000,7 @@ Trải qua quá trình nghiên cứu, thiết kế kiến trúc, cấu hình h�
 | STT | Tiêu chí đánh giá của Giảng viên | Điểm tối đa | Điểm tự đánh giá | Kết quả kỹ thuật đã hoàn thành trong dự án |
 | :---: | :--- | :---: | :---: | :--- |
 | **1** | **Quản lý mã nguồn trên GitHub** | **1.5 đ** | **1.5 / 1.5 đ** | Hoàn thành kho chứa `dtc245200049-mon-trien-khai` trên nhánh `main`, thực hiện đầy đủ 3 mốc commit chuẩn mực theo Conventional Commits, có tệp `README.md` học thuật hướng dẫn cài đặt và vận hành hệ thống từ A-Z. |
-| **2** | **Triển khai Web Quiz + Database** | **1.5 đ** | **1.5 / 1.5 đ** | Ứng dụng Quiz (Node.js/Express) hoạt động ổn định, kết nối CSDL MySQL 8.0 mượt mà qua mạng nội bộ, tự động chấm điểm và lưu kết quả thi vào bảng `quiz_results`; có phpMyAdmin quản trị CSDL qua Nginx `/phpmyadmin/`. |
+| **2** | **Triển khai Web Quiz + Database** | **1.5 đ** | **1.5 / 1.5 đ** | Ứng dụng Quiz (Node.js/Express) hoàn chỉnh đầy đủ 3 tính năng: Tạo đề thi & thêm câu hỏi mới, làm bài thi trực tuyến, tự động chấm điểm và lưu kết quả thi vào bảng `quiz_results`; có phpMyAdmin quản trị CSDL qua Nginx `/phpmyadmin/`. |
 | **3** | **Nginx Reverse Proxy** | **1.5 đ** | **1.5 / 1.5 đ** | Nginx đóng vai trò điểm tiếp nhận duy nhất Ingress cổng 80, định tuyến ngược an toàn và trang bị đầy đủ 5 HTTP Security Headers chuẩn an ninh OWASP (đã kiểm chứng qua lệnh `curl -i`). |
 | **4** | **Hệ thống Giám sát Prometheus + Grafana** | **1.5 đ** | **1.5 / 1.5 đ** | cAdvisor thu thập số đo container từ nhân Linux, Prometheus cào dữ liệu qua 3 target ở trạng thái `UP`, Grafana tự động nạp sẵn Dashboard "Quiz System" hiển thị trực quan 7 panel (CPU %, RAM, Network, Heap Memory). |
 | **5** | **Hệ thống Log tập trung Loki + Promtail** | **1.5 đ** | **1.5 / 1.5 đ** | Promtail tự động gom log container chuyển về cụm lưu trữ Loki cổng 3100, kết nối thành công Data Source Loki trong Grafana, thực thi thành công 3 câu truy vấn LogQL chuẩn xác có kết quả thực tế. |
@@ -1043,7 +1044,7 @@ Toàn bộ 14 hình ảnh minh chứng được sinh viên trích xuất trực 
 
 | STT | Mã Ảnh | Tên Ảnh Minh Chứng Kỹ Thuật | Tiêu Chí Đánh Giá Ánh Xạ | Tình Trạng Thu Thập |
 | :---: | :---: | :--- | :---: | :---: |
-| 1 | **Ảnh 01** | Giao diện trang chủ Web Quiz (`http://localhost`) nhập Mã SV `DTC245200049` | Tiêu chí 2 (Ứng dụng Web) | ✅ **Đã có (100%)** |
+| 1 | **Ảnh 01** | Giao diện trang chủ Web Quiz (`http://localhost`) nhập Mã SV `DTC245200049` và tính năng Tạo đề thi | Tiêu chí 2 (Ứng dụng Web) | ✅ **Đã có (100%)** |
 | 2 | **Ảnh 02** | Màn hình làm bài và kết quả chấm điểm tự động (`5/5 - 100%`) | Tiêu chí 2 (Ứng dụng Web) | ✅ **Đã có (100%)** |
 | 3 | **Ảnh 03** | Bảng CSDL `quiz_results` trong phpMyAdmin (`http://localhost/phpmyadmin/`) | Tiêu chí 2 (Database MySQL) | ✅ **Đã có (100%)** |
 | 4 | **Ảnh 04** | Kiểm tra `curl -i /health` hiển thị đủ 5 Security Headers của Nginx | Tiêu chí 3 (Nginx Reverse Proxy) | ✅ **Đã có (100%)** |
