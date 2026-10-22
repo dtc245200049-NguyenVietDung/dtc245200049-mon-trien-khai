@@ -52,6 +52,9 @@ Mã SV: **DTC245200049**
 - [CHƯƠNG 2: THIẾT KẾ KIẾN TRÚC HẠ TẦNG VÀ DOCKER COMPOSE](#chương-2-thiết-kế-kiến-trúc-hạ-tầng-và-docker-compose)
   - [2.1. Kiến trúc phân tầng dịch vụ tổng thể](#21-kiến-trúc-phân-tầng-dịch-vụ-tổng-thể)
   - [2.2. Chi tiết quy hoạch Docker Compose (Tệp duy nhất `docker-compose.yml`)](#22-chi-tiết-quy-hoạch-docker-compose-tệp-duy-nhất-docker-composeyml)
+    - [2.2.1. Cấu hình dịch vụ CSDL MySQL với cơ chế Healthcheck tự phục hồi](#221-cấu-hình-dịch-vụ-csdl-mysql-với-cơ-chế-healthcheck-tự-phục-hồi)
+    - [2.2.2. Cấu hình chính sách khởi động lại (Restart Policy)](#222-cấu-hình-chính-sách-khởi-động-lại-restart-policy)
+    - [2.2.3. Hiện thực hóa các tính năng nghiệp vụ của Ứng dụng Quiz (Đề 35)](#223-hiện-thực-hóa-các-tính-năng-nghiệp-vụ-của-ứng-dụng-quiz-đề-35)
   - [2.3. Bảng phân bổ cổng Host và Cổng nội bộ container](#23-bảng-phân-bổ-cổng-host-và-cổng-nội-bộ-container)
   - [2.4. Quản lý biến môi trường an toàn qua tệp `.env`](#24-quản-lý-biến-môi-trường-an-toàn-qua-tệp-env)
 - [CHƯƠNG 3: CẤU HÌNH NGINX REVERSE PROXY VÀ TIÊU CHUẨN OWASP](#chương-3-cấu-hình-nginx-reverse-proxy-và-tiêu-chuẩn-owasp)
@@ -315,6 +318,27 @@ Dưới đây là phân tích chi tiết các chỉ thị hạ tầng then chố
 Tất cả các dịch vụ đều được gán cờ `restart: unless-stopped`. Chính sách này đảm bảo:
 *   Nếu một container gặp sự cố bất thường (OOMKilled - Out Of Memory hoặc ứng dụng crash với mã thoát khác 0), Docker Daemon sẽ tự động khởi động lại container ngay lập tức.
 *   Khi máy chủ chủ reboot (khởi động lại hệ điều hành), Docker Engine sẽ tự động dựng lại toàn bộ 9 container lên trạng thái hoạt động mà không cần can thiệp thủ công từ quản trị viên.
+
+### 2.2.3. Hiện thực hóa các tính năng nghiệp vụ của Ứng dụng Quiz (Đề 35)
+
+Bám sát yêu cầu nghiệp vụ chuyên biệt của **Đề 35: Website tạo đề thi trắc nghiệm, làm bài, chấm điểm tự động**, tầng ứng dụng `quiz_app` được thiết kế hoàn chỉnh với 3 khối chức năng cốt lõi:
+
+1. **Khối Tạo đề thi & Quản trị ngân hàng câu hỏi (Quiz Creation & Management):**
+   * Cho phép quản trị viên/giáo viên tạo đề thi mới bằng cách thêm câu hỏi trắc nghiệm trực quan: nhập nội dung câu hỏi, 4 phương án lựa chọn (A, B, C, D), tích chọn đáp án đúng qua nút radio, nhập giải thích đáp án và phân loại chủ đề.
+   * Dữ liệu được gửi qua API `POST /api/questions`, backend thực hiện xác thực dữ liệu và `INSERT` trực tiếp vào bảng `questions` trong CSDL MySQL nội bộ.
+   * Cung cấp giao diện trực quan hiển thị danh sách toàn bộ câu hỏi hiện có và hỗ trợ xóa câu hỏi theo ID qua API `DELETE /api/questions/:id`.
+   * *(Minh chứng giao diện trang chủ với nút Tạo đề thi được ghi lại tại **Ảnh 01**, và giao diện form tạo đề thi được ghi lại tại **Ảnh 01b**).*
+
+2. **Khối Làm bài thi và Chấm điểm tự động (Quiz Taking & Automated Scoring):**
+   * Thí sinh nhập Mã số sinh viên (VD: `DTC245200049`) và Họ tên để bắt đầu bài thi.
+   * Hệ thống tự động nạp danh sách câu hỏi từ CSDL MySQL qua API `GET /api/questions` (đáp án đúng được bảo mật hoàn toàn ở backend). Giao diện hiển thị thanh tiến độ làm bài trực quan theo thời gian thực.
+   * Khi thí sinh nhấn **Nộp bài**, API `POST /api/submit` tiếp nhận câu trả lời, tự động đối chiếu với đáp án chuẩn trong MySQL, tính toán điểm số chính xác (điểm số, tỷ lệ phần trăm %), ghi nhận bản ghi kết quả vào bảng `quiz_results` và phản hồi kết quả tức thì kèm giải trình chi tiết từng câu.
+   * *(Minh chứng quá trình làm bài và kết quả chấm điểm tự động được lưu tại **Ảnh 02**).*
+
+3. **Khối Quản trị Cơ sở dữ liệu trực quan qua phpMyAdmin:**
+   * Cho phép quản trị viên truy cập `http://localhost/phpmyadmin/` (được bảo vệ qua Reverse Proxy Nginx).
+   * Kiểm tra trực tiếp cấu trúc bảng, các bản ghi câu hỏi trong bảng `questions` và toàn bộ lịch sử thi của thí sinh trong bảng `quiz_results`.
+   * *(Minh chứng cấu trúc dữ liệu trong phpMyAdmin được lưu tại **Ảnh 03**).*
 
 ---
 
@@ -1044,8 +1068,9 @@ Toàn bộ 14 hình ảnh minh chứng được sinh viên trích xuất trực 
 
 | STT | Mã Ảnh | Tên Ảnh Minh Chứng Kỹ Thuật | Tiêu Chí Đánh Giá Ánh Xạ | Tình Trạng Thu Thập |
 | :---: | :---: | :--- | :---: | :---: |
-| 1 | **Ảnh 01** | Giao diện trang chủ Web Quiz (`http://localhost`) nhập Mã SV `DTC245200049` và tính năng Tạo đề thi | Tiêu chí 2 (Ứng dụng Web) | ✅ **Đã có (100%)** |
-| 2 | **Ảnh 02** | Màn hình làm bài và kết quả chấm điểm tự động (`5/5 - 100%`) | Tiêu chí 2 (Ứng dụng Web) | ✅ **Đã có (100%)** |
+| 1a | **Ảnh 01a** | Giao diện trang chủ Web Quiz (`http://localhost`) nhập Mã SV `DTC245200049` và nút Tạo đề thi | Tiêu chí 2 (Ứng dụng Web) | ✅ **Đã có (100%)** |
+| 1b | **Ảnh 01b** | Giao diện form Tạo đề thi mới (nhập 4 phương án, chọn đáp án đúng) và quản lý câu hỏi MySQL | Tiêu chí 2 (Ứng dụng Web) | ✅ **Đã có (100%)** |
+| 2  | **Ảnh 02**  | Màn hình làm bài và kết quả chấm điểm tự động (`5/5 - 100%`) | Tiêu chí 2 (Ứng dụng Web) | ✅ **Đã có (100%)** |
 | 3 | **Ảnh 03** | Bảng CSDL `quiz_results` trong phpMyAdmin (`http://localhost/phpmyadmin/`) | Tiêu chí 2 (Database MySQL) | ✅ **Đã có (100%)** |
 | 4 | **Ảnh 04** | Kiểm tra `curl -i /health` hiển thị đủ 5 Security Headers của Nginx | Tiêu chí 3 (Nginx Reverse Proxy) | ✅ **Đã có (100%)** |
 | 5 | **Ảnh 05** | Terminal lệnh `docker compose exec quiz_app id` chứng minh Non-Root UID 1000 | Tiêu chí 6 (Hardening hệ thống) | ✅ **Đã có (100%)** |
