@@ -4,15 +4,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const stepQuiz = document.getElementById('step-quiz');
   const stepResult = document.getElementById('step-result');
   const stepHistory = document.getElementById('step-history');
+  const stepManage = document.getElementById('step-manage');
 
   const studentIdInput = document.getElementById('student-id');
   const studentNameInput = document.getElementById('student-name');
   const btnStart = document.getElementById('btn-start');
+  const btnManageQuiz = document.getElementById('btn-manage-quiz');
+  const btnManageBackHome = document.getElementById('btn-manage-back-home');
   const btnViewHistory = document.getElementById('btn-view-history');
   const btnSubmit = document.getElementById('btn-submit');
   const btnRetry = document.getElementById('btn-retry');
   const btnShowHistoryFromRes = document.getElementById('btn-show-history-from-res');
   const btnBackHome = document.getElementById('btn-back-home');
+
+  const formCreateQuestion = document.getElementById('form-create-question');
+  const manageQuestionsList = document.getElementById('manage-questions-list');
+  const totalManageQuestions = document.getElementById('total-manage-questions');
 
   const questionsContainer = document.getElementById('questions-container');
   const progressBar = document.getElementById('progress-bar');
@@ -52,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Switch Views
   function showStep(step) {
-    [stepIntro, stepQuiz, stepResult, stepHistory].forEach(el => el.classList.add('hidden'));
+    [stepIntro, stepQuiz, stepResult, stepHistory, stepManage].forEach(el => el.classList.add('hidden'));
     step.classList.remove('hidden');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -249,6 +256,125 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnViewHistory.addEventListener('click', loadHistory);
   btnShowHistoryFromRes.addEventListener('click', loadHistory);
+
+  // Load and Render Manage Questions List
+  async function loadManageQuestions() {
+    manageQuestionsList.innerHTML = '<div class="text-center" style="padding:20px; color:var(--text-muted)">Đang tải danh sách câu hỏi...</div>';
+    try {
+      const res = await fetch('/api/admin/questions');
+      const list = await res.json();
+      if (!Array.isArray(list)) throw new Error(list.error || 'Lỗi tải câu hỏi');
+
+      totalManageQuestions.textContent = list.length;
+      if (list.length === 0) {
+        manageQuestionsList.innerHTML = '<div class="text-center" style="padding:20px; color:var(--text-muted)">Chưa có câu hỏi nào trong cơ sở dữ liệu.</div>';
+        return;
+      }
+
+      manageQuestionsList.innerHTML = list.map((item, idx) => `
+        <div class="manage-question-card" id="manage-q-${item.id}">
+          <div class="manage-q-header">
+            <span class="manage-q-title"><strong>#${item.id}.</strong> ${item.question}</span>
+            <button class="btn-delete-q" data-id="${item.id}" title="Xóa câu hỏi này">🗑️ Xóa</button>
+          </div>
+          <div class="manage-q-options">
+            ${item.options.map((opt, optIdx) => `
+              <div class="manage-opt ${optIdx === item.correct_answer ? 'correct-opt' : ''}">
+                ${optIdx === item.correct_answer ? '✅' : '⚪'} <strong>${String.fromCharCode(65 + optIdx)}:</strong> ${opt}
+              </div>
+            `).join('')}
+          </div>
+          ${item.explanation ? `<div class="manage-q-exp">💡 <em>Giải thích:</em> ${item.explanation}</div>` : ''}
+          <div class="manage-q-meta">🏷️ Phân loại: <code>${item.category || 'Chung'}</code></div>
+        </div>
+      `).join('');
+
+      // Add delete handlers
+      document.querySelectorAll('.btn-delete-q').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const qid = btn.getAttribute('data-id');
+          if (!confirm(`Bạn có chắc muốn xóa câu hỏi ID #${qid} khỏi cơ sở dữ liệu?`)) return;
+
+          btn.disabled = true;
+          btn.textContent = 'Đang xóa...';
+          try {
+            const delRes = await fetch(`/api/questions/${qid}`, { method: 'DELETE' });
+            const data = await delRes.json();
+            if (!delRes.ok) throw new Error(data.error || 'Lỗi xóa câu hỏi');
+            loadManageQuestions();
+          } catch (err) {
+            alert('Lỗi: ' + err.message);
+            btn.disabled = false;
+            btn.textContent = '🗑️ Xóa';
+          }
+        });
+      });
+    } catch (e) {
+      manageQuestionsList.innerHTML = `<div class="text-center" style="color:var(--danger)">Lỗi: ${e.message}</div>`;
+    }
+  }
+
+  // Open Manage Screen
+  btnManageQuiz.addEventListener('click', () => {
+    showStep(stepManage);
+    loadManageQuestions();
+  });
+
+  btnManageBackHome.addEventListener('click', () => {
+    showStep(stepIntro);
+  });
+
+  // Handle Create Question Form Submit
+  formCreateQuestion.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btnSave = document.getElementById('btn-save-question');
+
+    const questionText = document.getElementById('new-q-text').value.trim();
+    const opt0 = document.getElementById('new-opt-0').value.trim();
+    const opt1 = document.getElementById('new-opt-1').value.trim();
+    const opt2 = document.getElementById('new-opt-2').value.trim();
+    const opt3 = document.getElementById('new-opt-3').value.trim();
+    const checkedRadio = document.querySelector('input[name="new-correct-opt"]:checked');
+    const category = document.getElementById('new-q-category').value.trim();
+    const explanation = document.getElementById('new-q-explanation').value.trim();
+
+    if (!questionText || !opt0 || !opt1 || !opt2 || !opt3 || !checkedRadio) {
+      alert('Vui lòng nhập đầy đủ câu hỏi và 4 phương án lựa chọn!');
+      return;
+    }
+
+    const payload = {
+      question: questionText,
+      options: [opt0, opt1, opt2, opt3],
+      correct_answer: parseInt(checkedRadio.value, 10),
+      explanation: explanation,
+      category: category
+    };
+
+    btnSave.disabled = true;
+    btnSave.textContent = 'Đang lưu vào MySQL...';
+
+    try {
+      const res = await fetch('/api/questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Không thể tạo câu hỏi');
+
+      alert('Đã thêm câu hỏi mới vào CSDL MySQL thành công!');
+      formCreateQuestion.reset();
+      document.getElementById('radio-opt-0').checked = true;
+      document.getElementById('new-q-category').value = 'Triển khai & Quản trị Hệ thống';
+      loadManageQuestions();
+    } catch (err) {
+      alert('Lỗi: ' + err.message);
+    } finally {
+      btnSave.disabled = false;
+      btnSave.innerHTML = '<span>➕ Lưu Câu Hỏi Vào CSDL MySQL</span>';
+    }
+  });
 
   // Retry / Back
   btnRetry.addEventListener('click', () => {

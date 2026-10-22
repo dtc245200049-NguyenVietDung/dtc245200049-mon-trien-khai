@@ -65,6 +65,7 @@
 
           <div class="action-bar">
             <button id="btn-start" class="btn btn-primary btn-glow">Bắt Đầu Làm Bài Thi</button>
+            <button id="btn-manage-quiz" class="btn btn-accent">Tạo & Quản Lý Đề Thi</button>
             <button id="btn-view-history" class="btn btn-secondary">Xem Lịch Sử Nộp Bài</button>
           </div>
         </div>
@@ -145,6 +146,88 @@
           </div>
           <div class="action-bar">
             <button id="btn-back-home" class="btn btn-primary">Quay Lại Trang Chủ</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 5: Manage & Create Quiz Screen -->
+      <section id="step-manage" class="card fade-in hidden">
+        <div class="card-header">
+          <h2>Tạo Đề Thi & Quản Lý Câu Hỏi Trắc Nghiệm</h2>
+          <p>Dữ liệu đề thi được lưu trữ trực tiếp vào bảng <code>questions</code> trong CSDL MySQL nội bộ.</p>
+        </div>
+        <div class="card-body">
+          <form id="form-create-question" class="manage-form">
+            <div class="form-group">
+              <label for="new-q-text">Nội dung câu hỏi trắc nghiệm <span class="required">*</span></label>
+              <textarea id="new-q-text" rows="3" class="form-input" placeholder="Nhập nội dung câu hỏi..." required></textarea>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label for="new-opt-0">Phương án A <span class="required">*</span></label>
+                <div class="input-with-radio">
+                  <input type="radio" name="new-correct-opt" value="0" id="radio-opt-0" checked>
+                  <input type="text" id="new-opt-0" class="form-input" placeholder="Nhập đáp án A" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="new-opt-1">Phương án B <span class="required">*</span></label>
+                <div class="input-with-radio">
+                  <input type="radio" name="new-correct-opt" value="1" id="radio-opt-1">
+                  <input type="text" id="new-opt-1" class="form-input" placeholder="Nhập đáp án B" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="new-opt-2">Phương án C <span class="required">*</span></label>
+                <div class="input-with-radio">
+                  <input type="radio" name="new-correct-opt" value="2" id="radio-opt-2">
+                  <input type="text" id="new-opt-2" class="form-input" placeholder="Nhập đáp án C" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="new-opt-3">Phương án D <span class="required">*</span></label>
+                <div class="input-with-radio">
+                  <input type="radio" name="new-correct-opt" value="3" id="radio-opt-3">
+                  <input type="text" id="new-opt-3" class="form-input" placeholder="Nhập đáp án D" required>
+                </div>
+              </div>
+            </div>
+
+            <p class="field-hint">💡 Chọn nút tròn radio bên cạnh phương án để xác định <strong>đáp án đúng</strong>.</p>
+
+            <div class="form-grid-2" style="margin-top: 15px;">
+              <div class="form-group">
+                <label for="new-q-category">Phân loại / Chủ đề</label>
+                <input type="text" id="new-q-category" class="form-input" value="Triển khai & Quản trị Hệ thống">
+              </div>
+
+              <div class="form-group">
+                <label for="new-q-explanation">Giải thích đáp án</label>
+                <input type="text" id="new-q-explanation" class="form-input" placeholder="Giải trình ngắn gọn tại sao phương án đó đúng...">
+              </div>
+            </div>
+
+            <div class="action-bar" style="margin-top: 20px;">
+              <button type="submit" id="btn-save-question" class="btn btn-success">
+                <span>➕ Lưu Câu Hỏi Vào CSDL MySQL</span>
+              </button>
+              <button type="button" id="btn-manage-back-home" class="btn btn-secondary">Quay Lại Trang Chủ</button>
+            </div>
+          </form>
+
+          <hr class="section-divider">
+
+          <div class="manage-questions-header">
+            <h3>Danh Sách Câu Hỏi Hiện Có Trong Đề Thi (<span id="total-manage-questions">0</span> câu)</h3>
+            <p>Hệ thống tự động đồng bộ câu hỏi vào bài thi cho thí sinh.</p>
+          </div>
+
+          <div id="manage-questions-list" class="manage-list">
+            <!-- Rendered by app.js -->
           </div>
         </div>
       </section>

@@ -309,6 +309,87 @@ app.get('/api/results', async (req, res) => {
   }
 });
 
+// 5. Lay danh sach tat ca cau hoi quan tri (bao gom dap an de quan ly de thi)
+app.get('/api/admin/questions', async (req, res) => {
+  if (!dbConnected) {
+    return res.status(503).json({ error: 'CSDL MySQL chua san sang.' });
+  }
+
+  try {
+    const [rows] = await pool.query('SELECT * FROM questions ORDER BY id DESC');
+    const formatted = rows.map(r => ({
+      ...r,
+      options: typeof r.options === 'string' ? JSON.parse(r.options) : r.options
+    }));
+    res.json(formatted);
+  } catch (err) {
+    res.status(500).json({ error: 'Loi lay danh sach cau hoi quan tri: ' + err.message });
+  }
+});
+
+// 6. Tao cau hoi moi cho de thi (INSERT vao MySQL)
+app.post('/api/questions', async (req, res) => {
+  if (!dbConnected) {
+    return res.status(503).json({ error: 'CSDL MySQL chua san sang.' });
+  }
+
+  const { question, options, correct_answer, explanation, category } = req.body;
+
+  if (!question || !Array.isArray(options) || options.length < 2) {
+    return res.status(400).json({ error: 'Cau hoi va it nhat 2 lua chon la bat buoc.' });
+  }
+
+  const correctIndex = parseInt(correct_answer, 10);
+  if (isNaN(correctIndex) || correctIndex < 0 || correctIndex >= options.length) {
+    return res.status(400).json({ error: 'Chi muc dap an dung khong hop le.' });
+  }
+
+  try {
+    const [result] = await pool.query(
+      'INSERT INTO questions (question, options, correct_answer, explanation, category) VALUES (?, ?, ?, ?, ?)',
+      [
+        question.trim(),
+        JSON.stringify(options.map(opt => String(opt).trim())),
+        correctIndex,
+        explanation ? explanation.trim() : '',
+        category ? category.trim() : 'Triển khai & Quản trị Hệ thống'
+      ]
+    );
+
+    console.log(`[DB QUIZ] Da tao thanh cong cau hoi moi ID: ${result.insertId}`);
+    res.status(201).json({
+      success: true,
+      message: 'Tao cau hoi thanh cong!',
+      id: result.insertId
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Loi luu cau hoi vao CSDL: ' + err.message });
+  }
+});
+
+// 7. Xoa cau hoi khoi de thi
+app.delete('/api/questions/:id', async (req, res) => {
+  if (!dbConnected) {
+    return res.status(503).json({ error: 'CSDL MySQL chua san sang.' });
+  }
+
+  const questionId = parseInt(req.params.id, 10);
+  if (isNaN(questionId)) {
+    return res.status(400).json({ error: 'ID cau hoi khong hop le.' });
+  }
+
+  try {
+    const [result] = await pool.query('DELETE FROM questions WHERE id = ?', [questionId]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Khong tim thay cau hoi de xoa.' });
+    }
+    console.log(`[DB QUIZ] Da xoa cau hoi ID: ${questionId}`);
+    res.json({ success: true, message: 'Xoa cau hoi thanh cong!' });
+  } catch (err) {
+    res.status(500).json({ error: 'Loi xoa cau hoi: ' + err.message });
+  }
+});
+
 // Start Express server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`[QUIZ APP] He thong dang lang nghe tai http://0.0.0.0:${PORT}`);
