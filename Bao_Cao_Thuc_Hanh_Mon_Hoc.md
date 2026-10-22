@@ -208,6 +208,13 @@ Cụ thể, đề tài tập trung giải quyết 5 mục tiêu kỹ thuật tr�
 | **7** | **Tổng thể hệ sinh thái & Báo cáo thực hành** | **1.0 đ** | Hệ thống vận hành hợp nhất trong một file `docker-compose.yml` duy nhất, Báo cáo kỹ thuật chi tiết $\ge 10$ trang có bìa chuẩn và 14 hình ảnh minh chứng thực tế 100%. | ✅ **Đạt 1.0 / 1.0 đ** |
 | **TỔNG**| **ĐÁNH GIÁ TOÀN DIỆN HỌC PHẦN** | **10.0 đ** | **Mục tiêu đạt điểm số tối đa: 10.0 / 10 điểm xuất sắc** | **10.0 / 10** |
 
+> 📸 **[VỊ TRÍ CHÈN ẢNH 08]**  
+> *(Tệp ảnh đề xuất: `./docs/screenshots/anh_08_github_commits.png` - hoặc dán ảnh chụp màn hình GitHub vào đây)*  
+>  
+> ![Ảnh 08: Giao diện GitHub Repository và các commit trên nhánh main](./docs/screenshots/anh_08_github_commits.png)  
+>  
+> *Hình 1.1: Giao diện GitHub Repository `dtc245200049-mon-trien-khai` xác nhận quản lý mã nguồn và 3 mốc commit chuẩn trên nhánh main.*
+
 \newpage
 
 # CHƯƠNG 2: THIẾT KẾ KIẾN TRÚC HẠ TẦNG VÀ DOCKER COMPOSE
@@ -327,18 +334,43 @@ Bám sát yêu cầu nghiệp vụ chuyên biệt của **Đề 35: Website tạ
    * Cho phép quản trị viên/giáo viên tạo đề thi mới bằng cách thêm câu hỏi trắc nghiệm trực quan: nhập nội dung câu hỏi, 4 phương án lựa chọn (A, B, C, D), tích chọn đáp án đúng qua nút radio, nhập giải thích đáp án và phân loại chủ đề.
    * Dữ liệu được gửi qua API `POST /api/questions`, backend thực hiện xác thực dữ liệu và `INSERT` trực tiếp vào bảng `questions` trong CSDL MySQL nội bộ.
    * Cung cấp giao diện trực quan hiển thị danh sách toàn bộ câu hỏi hiện có và hỗ trợ xóa câu hỏi theo ID qua API `DELETE /api/questions/:id`.
-   * *(Minh chứng giao diện trang chủ với nút Tạo đề thi được ghi lại tại **Ảnh 01**, và giao diện form tạo đề thi được ghi lại tại **Ảnh 01b**).*
+
+> 📸 **[VỊ TRÍ CHÈN ẢNH 01a]**  
+> *(Tệp ảnh đề xuất: `./docs/screenshots/anh_01a_trang_chu_quiz.png`)*  
+>  
+> ![Ảnh 01a: Giao diện trang chủ Web Quiz nhập Mã SV DTC245200049 và các nút chức năng](./docs/screenshots/anh_01a_trang_chu_quiz.png)  
+>  
+> *Hình 2.1: Giao diện trang chủ Web Quiz (http://localhost) với Mã SV DTC245200049 và 3 nút chức năng Làm bài, Tạo đề thi và Lịch sử.*
+
+> 📸 **[VỊ TRÍ CHÈN ẢNH 01b]**  
+> *(Tệp ảnh đề xuất: `./docs/screenshots/anh_01b_tao_de_thi.png`)*  
+>  
+> ![Ảnh 01b: Giao diện form Tạo đề thi và Quản lý câu hỏi CSDL MySQL](./docs/screenshots/anh_01b_tao_de_thi.png)  
+>  
+> *Hình 2.2: Giao diện Tạo Đề Thi & Quản Lý Câu Hỏi: Form nhập câu hỏi, 4 phương án A-B-C-D, chọn đáp án đúng và danh sách câu hỏi trong MySQL.*
 
 2. **Khối Làm bài thi và Chấm điểm tự động (Quiz Taking & Automated Scoring):**
    * Thí sinh nhập Mã số sinh viên (VD: `DTC245200049`) và Họ tên để bắt đầu bài thi.
    * Hệ thống tự động nạp danh sách câu hỏi từ CSDL MySQL qua API `GET /api/questions` (đáp án đúng được bảo mật hoàn toàn ở backend). Giao diện hiển thị thanh tiến độ làm bài trực quan theo thời gian thực.
    * Khi thí sinh nhấn **Nộp bài**, API `POST /api/submit` tiếp nhận câu trả lời, tự động đối chiếu với đáp án chuẩn trong MySQL, tính toán điểm số chính xác (điểm số, tỷ lệ phần trăm %), ghi nhận bản ghi kết quả vào bảng `quiz_results` và phản hồi kết quả tức thì kèm giải trình chi tiết từng câu.
-   * *(Minh chứng quá trình làm bài và kết quả chấm điểm tự động được lưu tại **Ảnh 02**).*
+
+> 📸 **[VỊ TRÍ CHÈN ẢNH 02]**  
+> *(Tệp ảnh đề xuất: `./docs/screenshots/anh_02_lam_bai_cham_diem.png`)*  
+>  
+> ![Ảnh 02: Màn hình làm bài và kết quả chấm điểm tự động 5/5](./docs/screenshots/anh_02_lam_bai_cham_diem.png)  
+>  
+> *Hình 2.3: Màn hình làm bài trắc nghiệm và kết quả chấm điểm tự động (5/5 - 100%) kèm giải trình chi tiết từng câu.*
 
 3. **Khối Quản trị Cơ sở dữ liệu trực quan qua phpMyAdmin:**
    * Cho phép quản trị viên truy cập `http://localhost/phpmyadmin/` (được bảo vệ qua Reverse Proxy Nginx).
    * Kiểm tra trực tiếp cấu trúc bảng, các bản ghi câu hỏi trong bảng `questions` và toàn bộ lịch sử thi của thí sinh trong bảng `quiz_results`.
-   * *(Minh chứng cấu trúc dữ liệu trong phpMyAdmin được lưu tại **Ảnh 03**).*
+
+> 📸 **[VỊ TRÍ CHÈN ẢNH 03]**  
+> *(Tệp ảnh đề xuất: `./docs/screenshots/anh_03_phpmyadmin_database.png`)*  
+>  
+> ![Ảnh 03: Bảng CSDL quiz_results và questions trong phpMyAdmin](./docs/screenshots/anh_03_phpmyadmin_database.png)  
+>  
+> *Hình 2.4: Bảng CSDL questions và quiz_results được quản trị trực quan trong phpMyAdmin qua reverse proxy Nginx.*
 
 ---
 
@@ -531,7 +563,14 @@ scrape_configs:
 ```
 
 **Kết quả kiểm tra mục tiêu thực tế (Prometheus Targets):**
-Khi truy cập giao diện `http://localhost:9090/targets`, toàn bộ 3 target (`cadvisor:8080`, `localhost:9090`, `quiz_app:3000`) đều hiển thị trạng thái màu xanh **UP (1/1 up)**, xác nhận hệ thống thu thập số đo hoạt động liên tục và ổn định 100%. *(Minh chứng lưu tại **Ảnh 9**).*
+Khi truy cập giao diện `http://localhost:9090/targets`, toàn bộ 3 target (`cadvisor:8080`, `localhost:9090`, `quiz_app:3000`) đều hiển thị trạng thái màu xanh **UP (1/1 up)**, xác nhận hệ thống thu thập số đo hoạt động liên tục và ổn định 100%.
+
+> 📸 **[VỊ TRÍ CHÈN ẢNH 09]**  
+> *(Tệp ảnh đề xuất: `./docs/screenshots/anh_09_prometheus_targets.png`)*  
+>  
+> ![Ảnh 09: Giao diện Prometheus Targets trạng thái 3 target UP](./docs/screenshots/anh_09_prometheus_targets.png)  
+>  
+> *Hình 4.1: Giao diện Prometheus Targets (http://localhost:9090/targets) xác nhận toàn bộ 3 mục tiêu giám sát ở trạng thái màu xanh UP (1/1 up).*
 
 ---
 
@@ -555,7 +594,12 @@ Thay vì bắt người vận hành phải tự bấm tay tạo dashboard trong 
      $$\text{sum by (interface)} (\text{rate}(\text{container\_network\_receive\_bytes\_total}[1m]))$$
      $$\text{sum by (interface)} (\text{rate}(\text{container\_network\_transmit\_bytes\_total}[1m]))$$
 
-*(Minh chứng giao diện trực quan 7 panels hoạt động thực tế được lưu tại **Ảnh 10** của Báo cáo).*
+> 📸 **[VỊ TRÍ CHÈN ẢNH 10]**  
+> *(Tệp ảnh đề xuất: `./docs/screenshots/anh_10_grafana_dashboard.png`)*  
+>  
+> ![Ảnh 10: Dashboard Grafana 7 panels giám sát thời gian thực](./docs/screenshots/anh_10_grafana_dashboard.png)  
+>  
+> *Hình 4.2: Dashboard Grafana (http://localhost:3000) hiển thị trực quan 7 panels giám sát tài nguyên CPU, RAM, Network của hệ sinh thái container.*
 
 \newpage
 
@@ -678,6 +722,13 @@ analytics:
 
 Cấu hình sử dụng schema `v13` kết hợp định dạng chỉ mục `tsdb` và lưu trữ trực tiếp trên hệ thống tệp tin container mount vào Docker Volume `loki_data`. Điều này bảo đảm khả năng lưu trữ bền vững hàng triệu dòng nhật ký mà không tốn tài nguyên quản lý của các hệ thống lưu trữ phân tán phức tạp như S3 hay MinIO.
 
+> 📸 **[VỊ TRÍ CHÈN ẢNH 11]**  
+> *(Tệp ảnh đề xuất: `./docs/screenshots/anh_11_grafana_datasource_loki.png`)*  
+>  
+> ![Ảnh 11: Giao diện Grafana Data Source xác nhận kết nối Loki thành công](./docs/screenshots/anh_11_grafana_datasource_loki.png)  
+>  
+> *Hình 5.1: Giao diện Grafana Data Source xác nhận kết nối thành công tới dịch vụ Loki cổng 3100 qua mạng monitoring_net.*
+
 ---
 
 ## 5.4. Thực thi 3 câu truy vấn LogQL mẫu phân tích lưu lượng
@@ -697,7 +748,13 @@ Nhằm đáp ứng trọn vẹn **Tiêu chí 5 (1.5 điểm)** của đề tài,
     172.26.0.1 - - [21/Oct/2026:13:54:12 +0000] "GET /api/questions HTTP/1.1" 200 2420 "-" "curl/8.21.0" "-"
     172.26.0.1 - - [21/Oct/2026:13:54:12 +0000] "GET / HTTP/1.1" 200 6647 "-" "curl/8.21.0" "-"
     ```
-    *(Minh chứng giao diện Grafana Explore được lưu tại **Ảnh 12**).*
+
+> 📸 **[VỊ TRÍ CHÈN ẢNH 12]**  
+> *(Tệp ảnh đề xuất: `./docs/screenshots/anh_12_logql_nginx.png`)*  
+>  
+> ![Ảnh 12: Grafana Explore thực thi câu truy vấn LogQL giám sát Nginx](./docs/screenshots/anh_12_logql_nginx.png)  
+>  
+> *Hình 5.2: Giao diện Grafana Explore thực thi câu truy vấn LogQL {container="quiz_nginx"} giám sát toàn bộ access log qua Nginx Ingress.*
 
 ### 5.4.2. Câu truy vấn LogQL 2: Giám sát nhật ký hoạt động ứng dụng Quiz Backend
 *   **Cú pháp LogQL:**
@@ -723,7 +780,13 @@ Nhằm đáp ứng trọn vẹn **Tiêu chí 5 (1.5 điểm)** của đề tài,
     [DB INIT] Dang thu ket noi toi MySQL (Lan 1/30) tai quiz_db:3306...
     [DB INIT] Ket noi MySQL thanh cong!
     ```
-    *(Minh chứng giao diện Grafana Explore với bộ lọc DB được lưu tại **Ảnh 13**).*
+
+> 📸 **[VỊ TRÍ CHÈN ẢNH 13]**  
+> *(Tệp ảnh đề xuất: `./docs/screenshots/anh_13_logql_app_db.png`)*  
+>  
+> ![Ảnh 13: Grafana Explore thực thi truy vấn LogQL lọc sự kiện CSDL DB](./docs/screenshots/anh_13_logql_app_db.png)  
+>  
+> *Hình 5.3: Giao diện Grafana Explore thực thi câu truy vấn LogQL {container="quiz_app"} |= "DB" lọc sự kiện kết nối và khởi tạo MySQL.*
 
 
 \newpage
@@ -811,7 +874,14 @@ docker compose exec quiz_app id
 uid=1000(node) gid=1000(node) groups=1000(node)
 ```
 
-Kết quả trên chứng minh: Tiến trình ứng dụng Quiz (`server.js`) đang thực thi hoàn toàn độc lập dưới định danh `uid=1000(node)`, không có sự can thiệp của `root`, thỏa mãn hoàn hảo **Tiêu chí 6 (1.5 điểm)** của đề tài. *(Hình ảnh minh chứng thực tế được lưu tại **Ảnh 5** trong Báo cáo).*
+Kết quả trên chứng minh: Tiến trình ứng dụng Quiz (`server.js`) đang thực thi hoàn toàn độc lập dưới định danh `uid=1000(node)`, không có sự can thiệp của `root`, thỏa mãn hoàn hảo **Tiêu chí 6 (1.5 điểm)** của đề tài.
+
+> 📸 **[VỊ TRÍ CHÈN ẢNH 05]**  
+> *(Tệp ảnh đề xuất: `./docs/screenshots/anh_05_non_root_uid.png`)*  
+>  
+> ![Ảnh 05: Kết quả Terminal xác nhận tiến trình chạy dưới quyền Non-Root UID 1000](./docs/screenshots/anh_05_non_root_uid.png)  
+>  
+> *Hình 6.1: Kết quả lệnh docker compose exec quiz_app id chứng minh ứng dụng thực thi dưới quyền Non-Root UID 1000.*
 
 ---
 
@@ -910,7 +980,14 @@ Trong cấu hình dịch vụ `quiz_db` tại [`docker-compose.yml`](file:///d:/
 ```powershell
 docker compose ps
 ```
-Kết quả cho thấy dịch vụ `quiz_db` hiển thị trạng thái `3306/tcp, 33060/tcp` (chỉ là cổng nội bộ container), hoàn toàn không có ánh xạ dạng `0.0.0.0:3306->3306/tcp`. Chỉ duy nhất `quiz_nginx` mở cổng `0.0.0.0:80->80/tcp`. *(Minh chứng lưu tại **Ảnh 6**).*
+Kết quả cho thấy dịch vụ `quiz_db` hiển thị trạng thái `3306/tcp, 33060/tcp` (chỉ là cổng nội bộ container), hoàn toàn không có ánh xạ dạng `0.0.0.0:3306->3306/tcp`. Chỉ duy nhất `quiz_nginx` mở cổng `0.0.0.0:80->80/tcp`.
+
+> 📸 **[VỊ TRÍ CHÈN ẢNH 06]**  
+> *(Tệp ảnh đề xuất: `./docs/screenshots/anh_06_mysql_port_isolated.png`)*  
+>  
+> ![Ảnh 06: Terminal docker compose ps xác nhận MySQL không mở cổng ra host](./docs/screenshots/anh_06_mysql_port_isolated.png)  
+>  
+> *Hình 6.2: Kết quả lệnh docker compose ps chứng minh CSDL MySQL chỉ mở cổng nội bộ 3306 trong backend_net, không ánh xạ ra ngoài máy chủ host.*
 
 ---
 
@@ -945,7 +1022,12 @@ Trong đó:
 2. **Cung cấp tệp mẫu [`.env.example`](file:///d:/Git/dtc245200049-mon-trien-khai/.env.example):** Cung cấp tài liệu mẫu cho đội ngũ triển khai khác mà không làm rò rỉ mật khẩu thật.
 3. **Loại trừ qua tệp `.gitignore`:** Đảm bảo tệp chứa mật khẩu thực tế `.env` không bao giờ bị vô tình đẩy lên các kho chứa mã nguồn công khai như GitHub.
 
-*(Minh chứng cấu hình mật khẩu mạnh được lưu tại **Ảnh 7** của Báo cáo).*
+> 📸 **[VỊ TRÍ CHÈN ẢNH 07]**  
+> *(Tệp ảnh đề xuất: `./docs/screenshots/anh_07_env_strong_password.png`)*  
+>  
+> ![Ảnh 07: Cấu hình tệp biến môi trường .env mật khẩu mạnh phức tạp](./docs/screenshots/anh_07_env_strong_password.png)  
+>  
+> *Hình 6.3: Cấu hình tệp biến môi trường .env với mật khẩu phức tạp >= 12 ký tự chuẩn an ninh.*
 
 ---
 
@@ -1009,7 +1091,14 @@ Content-Security-Policy: default-src 'self' 'unsafe-inline' 'unsafe-eval' https:
 {"status":"UP","database":"CONNECTED","timestamp":"2026-10-21T13:52:38.670Z","service":"quiz-app","user_uid":1000}
 ```
 
-Kết quả phản hồi thực tế trên minh chứng: Cả 5 Security Headers đều xuất hiện đầy đủ trong mỗi phản hồi HTTP, bảo đảm website Quiz được bảo vệ toàn diện theo đúng tiêu chuẩn an ninh cao nhất của đề bài. *(Minh chứng được ghi lại tại **Ảnh 4** trong danh mục ảnh của Báo cáo).*
+Kết quả phản hồi thực tế trên minh chứng: Cả 5 Security Headers đều xuất hiện đầy đủ trong mỗi phản hồi HTTP, bảo đảm website Quiz được bảo vệ toàn diện theo đúng tiêu chuẩn an ninh cao nhất của đề bài.
+
+> 📸 **[VỊ TRÍ CHÈN ẢNH 04]**  
+> *(Tệp ảnh đề xuất: `./docs/screenshots/anh_04_nginx_security_headers.png`)*  
+>  
+> ![Ảnh 04: Kết quả cURL kiểm tra 5 HTTP Security Headers của Nginx](./docs/screenshots/anh_04_nginx_security_headers.png)  
+>  
+> *Hình 6.4: Kết quả lệnh curl.exe -i http://localhost/health xác nhận Nginx đính kèm đầy đủ 5 HTTP Security Headers chuẩn OWASP.*
 
 \newpage
 
@@ -1031,6 +1120,13 @@ Trải qua quá trình nghiên cứu, thiết kế kiến trúc, cấu hình h�
 | **6** | **Hardening hệ thống bảo mật chuyên sâu** | **1.5 đ** | **1.5 / 1.5 đ** | Áp dụng 5 giải pháp bảo mật đa lớp: Container Non-Root `USER 1000:1000`, phân tách 2 mạng cầu nối `frontend_net`/`backend_net`, CSDL MySQL cô lập tuyệt đối không mở cổng ra host, mật khẩu mạnh $\ge 12$ ký tự, 5 HTTP Security Headers. |
 | **7** | **Tổng thể hệ sinh thái & Báo cáo thực hành** | **1.0 đ** | **1.0 / 1.0 đ** | Toàn bộ 9 dịch vụ vận hành đồng bộ trong một file `docker-compose.yml` duy nhất, Báo cáo kỹ thuật thực hành dài trên 10 trang có bìa chuẩn thực tập tốt nghiệp và thu thập trọn vẹn 14 bức ảnh minh chứng thực tế 100%. |
 | **TỔNG**| **ĐÁNH GIÁ TOÀN DIỆN HỌC PHẦN** | **10.0 đ** | **10.0 / 10 đ** | **HOÀN THÀNH XUẤT SẮC - ĐẠT ĐIỂM SỐ TỐI ĐA** |
+
+> 📸 **[VỊ TRÍ CHÈN ẢNH 14]**  
+> *(Tệp ảnh đề xuất: `./docs/screenshots/anh_14_docker_compose_ps_all.png`)*  
+>  
+> ![Ảnh 14: Terminal docker compose ps hiển thị đầy đủ 9 container chạy ổn định](./docs/screenshots/anh_14_docker_compose_ps_all.png)  
+>  
+> *Hình 7.1: Kết quả lệnh docker compose ps xác nhận toàn bộ 9 container dịch vụ hoạt động đồng bộ và ổn định.*
 
 ---
 
