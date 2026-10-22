@@ -134,13 +134,18 @@ Toàn bộ hệ sinh thái gồm 9 container độc lập, tổ chức thành 4 
 ### 5.1. Tầng Ứng Dụng Web & Quản Trị Cơ Sở Dữ Liệu
 * **Trang chủ thi trắc nghiệm:** Mở trình duyệt truy cập `http://localhost/`
   * Nhập Mã sinh viên (VD: `DTC245200049`) và Họ tên $\rightarrow$ Nhấn **Bắt đầu làm bài**.
-  * Trả lời 5 câu hỏi chuẩn chuyên đề *Triển khai & Quản trị Hệ thống Phần mềm*.
+  * Trả lời các câu hỏi chuẩn chuyên đề *Triển khai & Quản trị Hệ thống Phần mềm*.
   * Nhấn **Nộp bài** $\rightarrow$ Hệ thống tự động chấm điểm (`5/5 - 100%`) và hiển thị giải trình chi tiết từng câu.
+* **Tính năng Tạo Đề Thi & Quản Lý Câu Hỏi:**
+  * Tại trang chủ, nhấn nút **Tạo & Quản Lý Đề Thi**.
+  * Nhập nội dung câu hỏi mới, 4 phương án (A, B, C, D), tích chọn đáp án đúng, phân loại và giải thích.
+  * Nhấn **Lưu Câu Hỏi Vào CSDL MySQL** $\rightarrow$ Dữ liệu được `INSERT` trực tiếp vào bảng `questions`.
+  * Xem danh sách toàn bộ câu hỏi và hỗ trợ xóa câu hỏi theo ID.
 * **Trang quản trị phpMyAdmin:** Truy cập `http://localhost/phpmyadmin/`
   * **Server:** `quiz_db`
   * **Username:** `quiz_user` (hoặc `root`)
   * **Password:** Tra cứu tại `.env` (`Quiz#Sec2026!Deploy` hoặc `Root#SecurePass2026!Dtc`)
-  * Kiểm tra bảng `questions` (5 câu hỏi mẫu) và bảng `quiz_results` (bản ghi bài thi vừa nộp).
+  * Kiểm tra bảng `questions` (danh sách câu hỏi) và bảng `quiz_results` (bản ghi bài thi vừa nộp).
 
 ### 5.2. Kiểm Thử Các Tiêu Chuẩn Bảo Mật (Security Hardening)
 * **Kiểm tra 5 HTTP Security Headers qua lệnh cURL:**
@@ -211,7 +216,7 @@ Truy cập **Grafana $\rightarrow$ Explore** (`http://localhost:3000/explore`), 
 | STT | Tiêu chí đánh giá của Giảng viên | Điểm | Hiện thực hóa kỹ thuật trong dự án | Trạng thái |
 | :---: | :--- | :---: | :--- | :---: |
 | **1** | **Quản lý mã nguồn trên GitHub** | **1.5 đ** | Repo `dtc245200049-mon-trien-khai` hoàn thành đủ 3 commit chuẩn mốc, tệp `README.md` học thuật hướng dẫn cài đặt & chạy chi tiết từ A-Z. | ✅ **Đạt 1.5 / 1.5 đ** |
-| **2** | **Triển khai Web Quiz + Database** | **1.5 đ** | Web Quiz (Node.js/Express) nạp câu hỏi, chấm điểm tự động, lưu kết quả MySQL 8.0, phpMyAdmin quản trị CSDL tại `/phpmyadmin/`. | ✅ **Đạt 1.5 / 1.5 đ** |
+| **2** | **Triển khai Web Quiz + Database** | **1.5 đ** | Web Quiz (Node.js/Express) đầy đủ 3 tính năng: Tạo đề thi & câu hỏi, làm bài trực tuyến, chấm điểm tự động & lưu kết quả MySQL 8.0, phpMyAdmin quản trị CSDL tại `/phpmyadmin/`. | ✅ **Đạt 1.5 / 1.5 đ** |
 | **3** | **Nginx Reverse Proxy** | **1.5 đ** | Nginx là cổng Ingress duy nhất (cổng 80), định tuyến ngược an toàn và trang bị đủ 5 HTTP Security Headers chuẩn OWASP. | ✅ **Đạt 1.5 / 1.5 đ** |
 | **4** | **Hệ thống Giám sát Prometheus + Grafana** | **1.5 đ** | cAdvisor thu thập metrics, Prometheus cào dữ liệu qua 3 targets `UP`, Grafana nạp sẵn Dashboard 7 panels theo dõi CPU/RAM/Network. | ✅ **Đạt 1.5 / 1.5 đ** |
 | **5** | **Hệ thống Log tập trung Loki + Promtail** | **1.5 đ** | Promtail tự động gom log container chuyển về Loki, Grafana Explore thực thi thành công 3 câu truy vấn LogQL chuẩn xác có kết quả thật. | ✅ **Đạt 1.5 / 1.5 đ** |
