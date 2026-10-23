@@ -149,7 +149,11 @@ Toàn bộ hệ sinh thái gồm 9 container độc lập, tổ chức thành 4 
 
 ### 5.2. Kiểm Thử Các Tiêu Chuẩn Bảo Mật (Security Hardening)
 * **Kiểm tra 5 HTTP Security Headers qua lệnh cURL:**
-  ```bash
+  ```powershell
+  # Trên Windows PowerShell (sử dụng curl.exe để chạy đúng binary curl):
+  curl.exe -i http://localhost/health
+
+  # Trên Linux / macOS / Git Bash:
   curl -i http://localhost/health
   ```
   *Kết quả kiểm tra:*
